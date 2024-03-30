@@ -16,7 +16,8 @@ class Matroska:
             self.sub_path = sub_path
         else:
             ui = input(
-                "No subtile file found in folder.\nWould you like to rip them from the video file? (y/n) » "
+                """"No subtile file found in folder.\n
+                Would you like to rip them from the video file? (y/n) » """
             )
 
             if ui.lower()[0] == "y":
@@ -27,9 +28,16 @@ class Matroska:
 
     def __str__(self):
         if self.sub_path == Path():
-            return f"MATROSKA OBJECT {{\n\tFilename:\t{self.mov_path.name}\n\tSRT name:\tMISSING SRT FILE\n}}"
+            return (
+                f"MATROSKA OBJECT {{\n"
+                f"\tFilename:\t{self.mov_path.name}\n"
+                f"\tSRT name:\tMISSING SRT FILE\n}}"
+            )
         else:
-            return f"MATROSKA OBJECT {{\n\tFilename:\t{self.mov_path.name}\n\tSRT name:\t{self.sub_path.name}\n}}"
+            return (
+                f"MATROSKA OBJECT {{\n\tFilename:\t{self.mov_path.name}"
+                f"\n\tSRT name:\t{self.sub_path.name}\n}}"
+            )
 
     def ff_swap_subs(
         self, aud_lang: str = "eng", sub_lang: str = "eng", aud_map: str = "0:a"
@@ -80,12 +88,12 @@ class Matroska:
                 "-c:s",
                 "srt",
                 # Remove encoder information
-                # "-fflags",
-                # "+bitexact",
-                # "-flags:v",
-                # "+bitexact",
-                # "-flags:a",
-                # "+bitexact",
+                "-fflags",
+                "+bitexact",
+                "-flags:v",
+                "+bitexact",
+                "-flags:a",
+                "+bitexact",
                 output,
             ]
         )
@@ -174,107 +182,3 @@ class Matroska:
 
         os.remove(orig_name)
         os.rename(self.mov_path, orig_name)
-
-
-@dataclass
-class SubtitleEntry:
-    duration: str
-    content: str
-
-
-@dataclass
-class Subtitle:
-    path: Path
-    entries: list[SubtitleEntry]
-
-    url_bad = [
-        "subtitles perfected",
-        "subtitles by",
-        "encoded by",
-        "http:",
-        "www.",
-        ".org/",
-        ".com/",
-        ".net/",
-    ]
-
-    def __init__(self, sub_file: Path) -> None:
-        """
-        Provided a path to an SRT file, create a new Subtitle Object
-
-        Patameters:
-            sub_file (str) : path to SRT file
-        """
-
-        self.path = sub_file
-
-        if not self.path.suffix == ".srt":
-            return print("Cannot open subtitle file.")
-
-        with open(self.path, "r") as file:
-            raw_text: list[str] = file.read().strip().split("\n\n")
-
-            self.entries: list[SubtitleEntry] = [
-                SubtitleEntry(duration=line[1], content="\n".join(line[2:]))
-                for line in [i.split("\n") for i in raw_text]
-            ]
-
-    def __len__(self):
-        return len(self.entries)
-
-    def __str__(self):
-        file_name = self.path.name
-
-        return f'SUBTITLE OBJECT {{\n\t"{file_name}"\n\t{len(self)} entries\n}}'
-
-    def filter(self, bad_words: list[str] = url_bad) -> int:
-        """
-        Updates self.entries after removing any string
-        listed in the [bad_words] list
-
-        Parameters:
-            bad_words (list[str]) : A list of strings
-            Default value is a list of url artifacts
-
-        Returns:
-            int: Number of entries removed
-        """
-
-        orig_count: int = len(self)
-
-        self.entries = [
-            entry
-            for entry in self.entries
-            if not any(w in entry.content.lower() for w in bad_words)
-        ]
-
-        return orig_count - len(self)
-
-    def update_srt(self) -> None:
-        """
-        Overwrites the existing srt file with whatever is stored in SELF.ENTRIES
-        """
-
-        with open(self.path, "w") as f:
-            f.write(
-                "\n\n".join(
-                    [
-                        f"{i+1}\n{entry.duration}\n{entry.content}"
-                        for i, entry in enumerate(self.entries)
-                    ]
-                )
-            )
-        print("Succesfully overwrote old SRT file.")
-
-    def quick_clean(self, bad_words: list[str] = url_bad) -> None:
-        """
-        Streamlines the FILTER & OUTPUT process
-
-        Parameters:
-            bad_words (list[str]) : A list of strings
-            Default value is a list of url artifacts
-        """
-
-        removed: int = self.filter(bad_words)
-        self.update_srt()
-        print(f"Removed {removed} lines from SRT file.")
