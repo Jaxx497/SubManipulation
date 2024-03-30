@@ -3,7 +3,7 @@ import srt
 from spellchecker import SpellChecker
 
 
-class FONTCOL:
+class bcolors:
     DEFAULT = "\033[1;37m"
     HEADER = "\033[95m"
     OKBLUE = "\033[94m"
@@ -16,20 +16,20 @@ class FONTCOL:
 
 def main():
     test_file = Path("./src/gbh.srt")
-    temp_sub = srt.Subtitle(test_file)
+    x = srt.Subtitle(test_file)
 
     checker = SpellChecker()
 
-    for i, sub in enumerate(temp_sub.entries, 1):
+    for i, sub in enumerate(x.entries, 1):
         words = sub.content.split()
         mispelled = [word for word in words if checker.unknown(word)]
 
         if len(mispelled):
-            print(f"Line {i}")
-            highlighted = temp_sub.entries[i - 1].content
+            print(f"Line {i}: {mispelled}")
+            highlighted = x.entries[i - 1].content
             for w in mispelled:
                 highlighted = highlighted.replace(
-                    w, f"{FONTCOL.FAIL}{w}{FONTCOL.DEFAULT}"
+                    w, f"{bcolors.FAIL}{w}{bcolors.DEFAULT}"
                 )
             print(f"{highlighted}\n")
 
