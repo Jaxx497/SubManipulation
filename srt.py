@@ -1,5 +1,6 @@
+import os
+import sys
 from dataclasses import dataclass
-import os, sys
 from pathlib import Path
 
 
@@ -70,9 +71,9 @@ class Subtitle:
         orig_count: int = len(self.entries)
 
         self.entries = [
-            entry
-            for entry in self.entries
-            if not any(w in entry.content.lower() for w in bad_words)
+            caption
+            for caption in self.entries
+            if not any(word in caption.content.lower() for word in bad_words)
         ]
 
         return orig_count - len(self.entries)
@@ -87,8 +88,8 @@ class Subtitle:
             f.write(
                 "\n\n".join(
                     [
-                        f"{i+1}\n{entry.duration}\n{entry.content}"
-                        for i, entry in enumerate(self.entries)
+                        f"{idx+1}\n{caption.duration}\n{caption.content}"
+                        for idx, caption in enumerate(self.entries)
                     ]
                 )
             )
