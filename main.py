@@ -22,18 +22,18 @@ def main():
     # print(x.path)
 
     # test_mkv = r"M:\High and Low (1963) [1080p x265 10bit DTS-4] (9.76 GB)\High.and.Low.1963.CC.1080p.BluRay.x265.10bit.DTS-ADE.mkv"
-    test_mkv = r"M:\High and Low (1963) [1080p x265 10bit DTS-4] (9.76 GB)"
+    # test_mkv = r"M:\High and Low (1963) [1080p x265 10bit DTS-4] (9.76 GB)"
 
     # test_mkv = r"M:\Being John Malkovich (1999) [1080p x265 10bit AAC-5.1] (4.75 GB)\Being John Malkovich (1999) Criterion (1080p BluRay x265 10bit Tigole).mkv"
     # test_mkv = "M:\\Being John Malkovich (1999) [1080p x265 10bit AAC-5.1] (4.75 GB)"  # Valid folder with one mkv
-    # test_mkv = "C:\\Users\\J\\Desktop\\py-movie-review"  # Valid folder, no mkv
-    # test_mkv = r"C:\Users\J\Desktop\mrsnicks.jpg"  # Invalid file
+    # test_mkv = "C:\\Users\\J\\Desktop\\py-movie-review"  # Valid folder, no mkv    # test_mkv = r"C:\Users\J\Desktop\mrsnicks.jpg"  # Invalid file
 
+    test_mkv = r"M:\L.A. Confidential (1997) [1080p x265 10bit AAC-5.1] (2.43 GB)"
     x = Matroska(
         test_mkv,
     )
-    print(x.target)
-    print(x.sub_path)
+    #
+    x.ffmpeg_bulider()
     # x.ff_extract_subs()
 
 

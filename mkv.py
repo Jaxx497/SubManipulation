@@ -1,6 +1,4 @@
 import os
-from os.path import isfile
-from re import sub
 import sys
 import subprocess
 from dataclasses import dataclass
@@ -11,12 +9,14 @@ from pathlib import Path
 @dataclass
 class Matroska:
     target: Path
-    sub_path: Path
+    sub_path: Path | None
 
     def __init__(self, usr_path: str, sub_path: str | None = None) -> None:
         if sub_path is not None:
             if os.path.isfile(sub_path) and sub_path.endswith(".srt"):
                 self.sub_path = Path(sub_path)
+        # else:
+        #     self.sub_path = sub_path
 
         if os.path.isfile(usr_path) and usr_path.endswith(".mkv"):
             self.target = Path(usr_path)
@@ -35,14 +35,15 @@ class Matroska:
                     print("TODO: USER MAKES A SELECTION")
 
             if sub_path is None:
-                valid_sub = [s for s in os.listdir(usr_path) if s.endswith(".srt")]
+                valid_sub = [
+                    sub for sub in os.listdir(usr_path) if sub.endswith(".srt")
+                ]
                 match len(valid_sub):
                     case 1:
-                        print("FOUND PATH")
                         self.sub_path = Path(os.path.join(usr_path, valid_sub[0]))
                     case _:
                         print("ERROR FINDING SUB FILE")
-                        self.sub_path = Path()
+                        self.sub_path = sub_path
         else:
             sys.exit("NOT A VALID PATH TO MKV OR FOLDER")
 
@@ -67,15 +68,6 @@ class Matroska:
 
         subprocess.run(
             [
-                # "ffmpeg",
-                # #  "-y",
-                # "-i",
-                # self.target,
-                # "-c",
-                # "copy",
-                # "-map",
-                # f"0:s:{id}",
-                # output,
                 "ffmpeg",
                 "-i",
                 self.target,
@@ -83,8 +75,68 @@ class Matroska:
                 f"0:s:{id}",
                 "-c:s",
                 "copy",
+                "-y",
                 output,
             ]
         )
         self.sub_path = Path(output)
         return self.sub_path
+
+    # Parameters will be handled by cmdline args
+    def ffmpeg_bulider(
+        self, aud_lang: str = "eng", aud_id: str = "0", sub_id: str = "0"
+    ):
+        # Assign mkv file as first input
+        prompt = ["ffmpeg", "-i", self.target]
+
+        # If sub_path is valid, it is the second input
+        if self.sub_path is not None:
+            prompt.extend(["-i", self.sub_path])
+
+        # Map video and FIRST audio track and chapters
+        prompt.extend(
+            [
+                "-map",
+                "0:v",
+                "-map",
+                f"0:a:{aud_id}",
+                "-map_metadata",
+                "-1",
+                "-map_chapters",
+                "0",
+            ]
+        )
+
+        # Handle languages of FIRST audio/sub:
+        prompt.extend(
+            [
+                "-metadata:s:a:0",
+                f"language={aud_lang}",
+                "-metadata:s:s:0",
+                "language=eng",
+            ]
+        )
+
+        # If a subtitle input is valid, copy it in
+        if self.sub_path is not None:
+            prompt.extend(["-map", "1", "-c", "copy", "-c:s", "srt"])
+        # Otherwise, map the specified subtitle ID to the only
+        else:
+            prompt.extend(["-map", f"0:s:{sub_id}", "-c", "copy"])
+
+        # Remove encoder information:
+        prompt.extend(
+            [
+                "-disposition:s:0",
+                "default",
+                "-fflags",
+                "+bitexact",
+                "-flags:v",
+                "+bitexact",
+                "-flags:a",
+                "+bitexact",
+                str(self.target).replace(".mkv", "_clean.mkv"),
+            ]
+        )
+
+        subprocess.run(prompt)
