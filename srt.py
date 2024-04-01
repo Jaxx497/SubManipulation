@@ -24,9 +24,15 @@ class Subtitle:
         ".org",
         ".com",
         ".net",
+        "HTTP",
+        "WWW",
+        ".ORG",
+        ".COM",
+        ".NET",
     }
 
     def __init__(self, path: str | Path) -> None:
+        print("WE ARE HERE")
         # Try to open Path
         if not os.path.exists(path):
             print("ERROR: Provided path to subtitle was invalid.")
@@ -41,6 +47,11 @@ class Subtitle:
                 Caption(duration=line[1], content="\n".join(line[2:]))
                 for line in [i.split("\n") for i in raw_text]
             ]
+
+    def __str__(self):
+        file_name = self.path
+
+        return f'SUBTITLE OBJECT {{\n\t"{file_name}"\n\t{len(self.entries)} entries\n}}'
 
     def clean(self, bad_words: set[str] = KILL_LIST) -> None:
         """
@@ -73,7 +84,7 @@ class Subtitle:
         self.entries = [
             caption
             for caption in self.entries
-            if not any(word in caption.content.lower() for word in bad_words)
+            if not any(word in caption.content for word in bad_words)
         ]
 
         return orig_count - len(self.entries)

@@ -3,6 +3,7 @@ import sys
 import subprocess
 from dataclasses import dataclass
 
+from srt import Subtitle
 from pathlib import Path
 
 
@@ -10,16 +11,18 @@ from pathlib import Path
 class Matroska:
     target: Path
     sub_path: Path | None
+    sub_data: Subtitle
 
     def __init__(self, usr_path: str, sub_path: str | None = None) -> None:
         if sub_path is not None:
             if os.path.isfile(sub_path) and sub_path.endswith(".srt"):
                 self.sub_path = Path(sub_path)
-        # else:
-        #     self.sub_path = sub_path
+                self.sub_data = Subtitle(self.sub_path)
+                self.sub_data.clean()
 
         if os.path.isfile(usr_path) and usr_path.endswith(".mkv"):
             self.target = Path(usr_path)
+            print(self.target)
 
         elif os.path.isdir(usr_path):
             valid_mkv = [f for f in os.listdir(usr_path) if f.endswith(".mkv")]
@@ -41,6 +44,8 @@ class Matroska:
                 match len(valid_sub):
                     case 1:
                         self.sub_path = Path(os.path.join(usr_path, valid_sub[0]))
+                        self.sub_data = Subtitle(self.sub_path)
+                        self.sub_data.clean()
                     case _:
                         print("ERROR FINDING SUB FILE")
                         self.sub_path = sub_path
@@ -140,3 +145,18 @@ class Matroska:
         )
 
         subprocess.run(prompt)
+
+    def _clean_up(self):
+        orig_name = str(self.target)
+
+        if self.sub_path is not None and os.path.exists(self.sub_path):
+            os.remove(self.sub_path)
+            print("Removing external srt file")
+
+        clean_name = orig_name.replace(".mkv", "_clean.mkv")
+
+        if os.path.exists(clean_name):
+            os.remove(orig_name)
+            print(f"{orig_name} has been removed")
+            os.rename(clean_name, orig_name)
+            print(f"{clean_name} renamed to {orig_name}")

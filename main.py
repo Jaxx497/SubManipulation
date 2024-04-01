@@ -1,8 +1,7 @@
 # from pathlib import Path
 from mkv import Matroska
 
-# from srt import Subtitle
-from mkv import Matroska
+from srt import Subtitle
 
 
 class COLORS:
@@ -17,37 +16,19 @@ class COLORS:
 
 
 def main():
-    # test_file = "./src/gb2.srt"
-    # x = Subtitle(test_file)
-    # print(x.path)
-
-    # test_mkv = r"M:\High and Low (1963) [1080p x265 10bit DTS-4] (9.76 GB)\High.and.Low.1963.CC.1080p.BluRay.x265.10bit.DTS-ADE.mkv"
-    # test_mkv = r"M:\High and Low (1963) [1080p x265 10bit DTS-4] (9.76 GB)"
-
-    # test_mkv = r"M:\Being John Malkovich (1999) [1080p x265 10bit AAC-5.1] (4.75 GB)\Being John Malkovich (1999) Criterion (1080p BluRay x265 10bit Tigole).mkv"
-    # test_mkv = "M:\\Being John Malkovich (1999) [1080p x265 10bit AAC-5.1] (4.75 GB)"  # Valid folder with one mkv
-    # test_mkv = "C:\\Users\\J\\Desktop\\py-movie-review"  # Valid folder, no mkv    # test_mkv = r"C:\Users\J\Desktop\mrsnicks.jpg"  # Invalid file
-
-    test_mkv = r"M:\L.A. Confidential (1997) [1080p x265 10bit AAC-5.1] (2.43 GB)"
+    test_mkv = r"M:\Pirates of the Caribbean - The Curse of the Black Pearl (2003) [1080p x265 10bit AAC-5.1] (2.83 GB)"
     x = Matroska(
         test_mkv,
     )
-    #
+
+    print(x.sub_path)
+
     x.ffmpeg_bulider()
-    # x.ff_extract_subs()
+    x._clean_up()
 
 
 """
 # -- ROADMAP -- #
-1. Read in subtitle track
-    x Make sure it's a path
-    - Make sure it's a valid subtitle file
-
-2. Recreate Matroska class
-    - Create sub extraction
-    - Figure out better way to read folders
-
-3. Streamline FFMPEG Wrapping
 
 4. Implement cmdline args
 
